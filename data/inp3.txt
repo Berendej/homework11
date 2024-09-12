@@ -1,0 +1,8 @@
+inp3_cmd1
+inp3_cmd2
+{
+    inp3_cmd3
+    {
+        inp3_cmd4
+    }
+    inp3_cmd5

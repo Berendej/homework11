@@ -1,0 +1,15 @@
+inp4_cmd1
+inp4_cmd2
+{
+    inp4_cmd3
+    inp4_cmd4
+}
+{
+    inp4_cmd5
+    inp4_cmd6
+    {
+	inp4_cmd7
+	inp4_cmd8
+    }
+    inp4_cmd9
+}

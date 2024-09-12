@@ -1,0 +1,6 @@
+inp1_cmd1
+inp1_cmd2
+inp1_cmd3
+inp1_cmd4
+inp1_cmd5
+inp1_cmd6

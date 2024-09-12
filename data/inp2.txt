@@ -1,0 +1,10 @@
+inp2_cmd1
+inp2_cmd2
+{
+    inp2_cmd3
+    {
+        inp2_cmd4
+    }
+    inp2_cmd5
+}
+inp2_cmd6
