@@ -17,6 +17,7 @@ server_connection_c::server_connection_c(boost::asio::ip::tcp::socket sock) :
 {
     std::unique_lock lck(s_instatinate_mutex);
     m_instance_id = ++s_instance_id;
+    std::cout << "sqlite is ok :" << sqlite_c::get_instance().is_ok() << std::endl;
 #ifdef VERBOSE
     std::cout << "server_connection_c " << m_instance_id << std::endl;
 #endif
@@ -119,7 +120,7 @@ std::string server_connection_c::gen_trancate(const std::vector<std::string> &v)
     {
         return "";
     }
-    std::string sql{"delete *  from "};
+    std::string sql{"delete from "};
     sql += v[1];
     sql += " ;";
     std::cout << "sql = " << sql << std::endl;
@@ -142,6 +143,7 @@ std::string server_connection_c::gen_select(const std::vector<std::string> &v)
 
 std::string server_connection_c::gen_intersec(const std::vector<std::string> &v)
 {
+
     return ""; // stub
 }
 
@@ -196,6 +198,12 @@ std::string server_connection_c::process_cmd(int length)
 #ifdef VERBOSE
     std::cout << "got command " << s << std::endl;
 #endif
+    // cut away trailing \n
+    if (s.length() > 0 and '\n' == s[s.length()-1] )
+    {
+        s.pop_back();
+    }
+
     std::string sql_text = preprocess_cmd(s);
     if ( 0 == sql_text.length() )
     {

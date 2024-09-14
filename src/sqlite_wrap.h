@@ -3,7 +3,6 @@
 #include <sqlite3.h>
 #include "common_types.h"
 
-
 // wrapper
 class sqlite_c
 {
@@ -15,6 +14,7 @@ private:
     int m_rows;
 
     sqlite_c();
+    bool check_tables();
     void transform_table();
 
 public:
@@ -25,5 +25,6 @@ public:
     }
     int callback(int argc, char **argv, char **azColName);
     std::string execute(std::string oper);
+    bool is_ok();
     virtual ~sqlite_c();
 };
