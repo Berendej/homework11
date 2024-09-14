@@ -19,7 +19,7 @@ int callback_aux(void* sqlite_ptr, int argc, char **argv, char **azColName)
 
 int sqlite_c::callback(int argc, char **argv, char **azColName)
 {
-    std::cout << "callback" << std::endl;
+    std::cout << "callback\n";
     int i;
     std::string field;
     std::string val;
@@ -29,6 +29,7 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
     {
         ok = true;
         field = azColName[i];
+        std::cout << "i " << i << " col " << field << std::endl;
         i_table_t it{ m_table.find(field) };
         if ( m_table.end() == it )
         {
@@ -36,6 +37,7 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
             if ( p.second )
             {
                 it = p.first;
+                m_field_order[m_current_field_num++] = field;
             }
             else
             {
@@ -46,6 +48,7 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
         if ( ok )
         {
             val = argv[i];
+            std::cout << "val " << val << std::endl;
             it->second.push_back(val);
             m_rows = it->second.size();
         }
@@ -73,19 +76,16 @@ sqlite_c::sqlite_c()
 bool sqlite_c::check_tables()
 {
     std::string s = execute(std::string("SELECT * FROM sqlite_master WHERE type='table';"));
-    std::cout << "check_tables response :\n" << s << std::endl;
     bool a = false;
     bool b = false;
     for( auto p : m_table )
     {
         if ( 0 == p.first.compare("a") || 0 == p.first.compare("A") )
         {
-            std::cout << "a ok\n";
             a = true;
         }
         if ( 0 == p.first.compare("b") || 0 == p.first.compare("B") )
         {
-            std::cout << "b ok\n";
             b = true;
         }
     }
@@ -102,28 +102,33 @@ bool sqlite_c::check_tables()
 
 void sqlite_c::transform_table()
 {
-    std::cout << "t t size " << m_rows << std::endl;
     str_vector_t v;
     v.resize(m_rows + 1);
-    i_table_t it = m_table.begin();
-    while ( it != m_table.end() )
+    i_fild_order_t ifield = m_field_order.begin();
+    while ( ifield != m_field_order.end() )
     {
+        i_table_t it = m_table.find(ifield->second);
+        if ( it == m_table.end() )
+        {
+            std::cout << "wrong field number correspondence" << std::endl;
+            continue;
+        }
         int row_ix = 0;
         v[row_ix].append(it->first);
         v[row_ix++].append("\t");
         i_str_vector_t ist = it->second.begin();
         for( auto s : it->second)
         {
+#ifdef VERBOSE
             std::cout << "value " << s << std::endl;
+#endif
             v[row_ix].append(s);
             v[row_ix++].append("\t");
         }
-        it++;
+        ifield++;
     }
-    std::cout << "v.size " << v.size() << std::endl;
     for( auto s : v )
     {
-        std::cout << "append " << s << std::endl;
         m_response.append(s);
         m_response.append("\n");
     }
@@ -138,6 +143,8 @@ std::string sqlite_c::execute(std::string oper)
     }
     m_response = "OK\n";
     m_table.clear();
+    m_field_order.clear();
+    m_current_field_num = 1;
     m_rows = 0;
     int rc = sqlite3_exec(m_db, oper.c_str(), callback_aux, this, &err_msg);
     if( rc != SQLITE_OK )

@@ -143,8 +143,9 @@ std::string server_connection_c::gen_select(const std::vector<std::string> &v)
 
 std::string server_connection_c::gen_intersec(const std::vector<std::string> &v)
 {
-
-    return ""; // stub
+    std::string sql{" select A.id as id, A.name as A, B.name as B from A inner join B on A.id = B.id;"
+                };
+    return sql;
 }
 
 std::string server_connection_c::gen_dif(const std::vector<std::string> &v)
