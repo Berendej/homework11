@@ -1,26 +1,10 @@
 #pragma once
 
-#include <list>
-#include <string>
 #include <memory>
-#include <sqlite3.h>
 
-#define DB_NAME "db.sqlite"
+#include "common_types.h"
 
-// wrapper
-class sqlite_c
-{
-private:
-    sqlite3 *m_db;
-    bool m_valid;
-public:
-    sqlite_c();
-    bool execute(std::string oper);
-    virtual ~sqlite_c();
-};
-
-class server_connection_c : public sqlite_c, 
-                            public std::enable_shared_from_this<server_connection_c>
+class server_connection_c : public std::enable_shared_from_this<server_connection_c>
 {
     static int s_instance_id;
     static std::mutex s_instatinate_mutex;
@@ -29,9 +13,17 @@ class server_connection_c : public sqlite_c,
 
     boost::asio::ip::tcp::socket m_socket;
     boost::asio::streambuf m_buffer;
-    void process_cmd(int length);
+    std::string process_cmd(int length);
     void handle_read(const boost::system::error_code error,
                      const std::size_t length);
+    void handle_write(const boost::system::error_code& error);
+
+    std::string gen_insert(const std::vector<std::string> &v);
+    std::string gen_trancate(const std::vector<std::string> &v);
+    std::string gen_intersec(const std::vector<std::string> &v);
+    std::string gen_dif(const std::vector<std::string> &v);
+    std::string gen_select(const std::vector<std::string> &v);
+    std::string preprocess_cmd(const std::string &s);
 public:
     server_connection_c(boost::asio::ip::tcp::socket sock);
     virtual ~server_connection_c();

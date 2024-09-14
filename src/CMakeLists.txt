@@ -18,7 +18,7 @@ file( COPY ../data/inp3.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 file( COPY ../data/inp4.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 file( COPY ../data/inp1_inline.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
-add_executable(sql_server sql_server.cpp server_connection.cpp service.cpp  )
+add_executable(sql_server sql_server.cpp server_connection.cpp service.cpp sqlite_wrap.cpp )
 target_include_directories( sql_server PUBLIC "${SQLITE3_INCLUDE_DIRS}")
 target_link_libraries(sql_server sqlite3 )
 

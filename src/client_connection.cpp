@@ -8,7 +8,6 @@
 
 client_connection_c::client_connection_c(boost::asio::io_service& service, short port) :
             m_socket(service), 
-            m_timer(service, std::chrono::seconds{1}), 
             m_port(port)
 {
 #ifdef VERBOSE
@@ -86,31 +85,52 @@ void client_connection_c::handle_write(const boost::system::error_code& error)
 #ifdef VERBOSE
     std::cout << "handle_write" << std::endl;
 #endif
-    m_timer.expires_after( std::chrono::seconds{1} );
-    m_timer.async_wait(boost::bind( &client_connection_c::handle_timer, 
-                                    shared_from_this(),
-                                    boost::asio::placeholders::error));
-}
-
-void client_connection_c::handle_timer(const boost::system::error_code& error)
-{
-#ifdef VERBOSE
-    std::cout << "handle_timer" << std::endl;
-#endif
     if ( error )
     {
-        std::cout << "handle_timer error" << std::endl;
-        // probably timer was cancelled
-        // this will endup the life of client_connection
+        std::cout << "handle_write failed" << std::endl;
         return;
     }
-#ifdef VERBOSE
-    std::cout << "handle_timer ok" << std::endl;
-#endif
-    transit_command();
+
+    boost::asio::async_read_until( m_socket, m_buffer, '\r',
+        boost::bind(&client_connection_c::handle_read, 
+                     shared_from_this(),
+                     boost::asio::placeholders::error,
+                     boost::asio::placeholders::bytes_transferred));
+
 }
 
 client_connection_c::~client_connection_c()
 {
     std::cout << "~client_connection()" << std::endl;
+}
+
+void client_connection_c::process_response(int length)
+{
+    std::string s( (std::istreambuf_iterator<char>(&m_buffer)), 
+                    std::istreambuf_iterator<char>() );
+#ifdef VERBOSE
+    std::cout << "response: " << s << std::endl;
+#endif
+}
+
+void client_connection_c::handle_read(const boost::system::error_code error,
+                                     const std::size_t length) 
+{
+    if (error or 0 == length ) 
+    {
+#ifdef VERBOSE
+        std::cout << "handle read error " << error << " << len " << length << std::endl;
+#endif
+        // zero length also means connection is closed
+        // connection is closed, we do not continue 
+        // async calling so that smart pointer will do its work
+        // and connection_c will be deleted
+        return;
+    }
+#ifdef VERBOSE
+    std::cout << "handle read length " << length <<  std::endl;
+#endif
+    process_response(length);
+    m_buffer.consume(length);
+    transit_command();
 }
