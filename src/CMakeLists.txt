@@ -6,17 +6,7 @@ if ( SQLITE3_FOUND )
     include_directories( ${SQLITE3_INCLUDE_DIRS})
 endif (SQLITE3_FOUND)
 
-file( COPY ../data/test1.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/test2.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/test3.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/test4.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/test_all.sh DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-
-file( COPY ../data/inp1.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/inp2.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/inp3.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/inp4.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ../data/inp1_inline.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+file( COPY ../data/inserts.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 
 add_executable(sql_server sql_server.cpp server_connection.cpp service.cpp sqlite_wrap.cpp )
 target_include_directories( sql_server PUBLIC "${SQLITE3_INCLUDE_DIRS}")
