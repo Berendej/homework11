@@ -14,7 +14,6 @@ target_link_libraries(sql_server sqlite3 )
 
 add_executable( sql_client sql_client.cpp client_connection.cpp )
 
-
 # package part which enables
 # run: cmake --build . --target package
 install(TARGETS sql_server RUNTIME DESTINATION bin)

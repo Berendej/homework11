@@ -7,7 +7,7 @@
 #include "server_connection.h"
 #include "sqlite_wrap.h"
 
-#define VERBOSE
+//#define VERBOSE
 
 int server_connection_c::s_instance_id = 0;
 std::mutex server_connection_c::s_instatinate_mutex;
@@ -17,8 +17,8 @@ server_connection_c::server_connection_c(boost::asio::ip::tcp::socket sock) :
 {
     std::unique_lock lck(s_instatinate_mutex);
     m_instance_id = ++s_instance_id;
-    std::cout << "sqlite is ok :" << sqlite_c::get_instance().is_ok() << std::endl;
 #ifdef VERBOSE
+    std::cout << "sqlite is ok :" << sqlite_c::get_instance().is_ok() << std::endl;
     std::cout << "server_connection_c " << m_instance_id << std::endl;
 #endif
 }
@@ -109,7 +109,9 @@ std::string server_connection_c::gen_insert(const std::vector<std::string> &v)
     sql += ", \"";
     sql += v[3];
     sql += "\" );";
+#ifdef VERBOSE
     std::cout << "sql = " << sql << std::endl;
+#endif
     return sql;
 }
 
@@ -123,7 +125,9 @@ std::string server_connection_c::gen_trancate(const std::vector<std::string> &v)
     std::string sql{"delete from "};
     sql += v[1];
     sql += " ;";
+#ifdef VERBOSE
     std::cout << "sql = " << sql << std::endl;
+#endif
     return sql;
 }
 
@@ -137,7 +141,9 @@ std::string server_connection_c::gen_select(const std::vector<std::string> &v)
     std::string sql{"select *  from "};
     sql += v[1];
     sql += " ;";
+#ifdef VERBOSE
     std::cout << "sql = " << sql << std::endl;
+#endif
     return sql;
 }
 
@@ -153,7 +159,12 @@ std::string server_connection_c::gen_dif(const std::vector<std::string> &v)
     std::string sql{ " SELECT A.id as id, A.name as A , B.name as B "
                      " FROM A "
                      " FULL JOIN B ON (A.id = B.id) "
-                     " WHERE A.id IS NULL OR B.id IS NULL;"
+                     " WHERE  B.id IS NULL "
+                     " UNION "
+                     " SELECT B.id as id, A.name as A , B.name as B "
+                     " FROM B "
+                     " FULL JOIN A ON (A.id = B.id) "
+                     " WHERE A.id IS NULL ;"
                 };
     return sql;
 }
@@ -220,13 +231,6 @@ std::string server_connection_c::process_cmd(int length)
 
 server_connection_c::~server_connection_c()
 {
-#ifdef THIS_IS_WRONG
-    /* Если данные закончились внутри динамического блока, весь динамический блок игнорируется.*/
-    if ( m_queue.size() > 0 )
-    {
-        dump_private_queue();
-    }
-#endif
 #ifdef VERBOSE
     std::cout << "~server_connection_c " << m_socket.is_open() << std::endl;
 #endif

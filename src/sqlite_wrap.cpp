@@ -2,7 +2,7 @@
 
 #include "sqlite_wrap.h"
 
-#define VERBOSE
+//#define VERBOSE
 #define DB_NAME "db.sqlite"
 #define COL_GAP 3
 
@@ -19,7 +19,6 @@ int callback_aux(void* sqlite_ptr, int argc, char **argv, char **azColName)
 
 int sqlite_c::callback(int argc, char **argv, char **azColName)
 {
-    std::cout << "callback\n";
     int i;
     std::string field;
     std::string val;
@@ -29,7 +28,6 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
     {
         ok = true;
         field = azColName[i];
-        std::cout << "i " << i << " col " << field << std::endl;
         i_table_t it{ m_table.find(field) };
         if ( m_table.end() == it )
         {
@@ -38,13 +36,15 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
             {
                 it = p.first;
                 m_field_order[m_current_field_num++] = field;
+#ifdef VERBOSE
                 std::cout << "initial width of " << field << " " 
                              << field.length() << std::endl;
+#endif                             
                 m_column_width[field] = field.length();
             }
             else
             {
-                std::cout << "not ok\n";
+                std::cout << "wrong alorithm\n";
                 ok = false;
             }
         }
@@ -57,11 +57,15 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
             }
             if ( val.length() > m_column_width[field] )
             {
+#ifdef VERBOSE
                 std::cout << " width of " << field << " increased to " 
                              << val.length() << std::endl;
+#endif
                 m_column_width[field] = val.length();
             }
+#ifdef VERBOSE
             std::cout << "val " << val << std::endl;
+#endif
             it->second.push_back(val);
             m_rows = it->second.size();
         }
@@ -74,9 +78,7 @@ sqlite_c::sqlite_c()
     int rc = sqlite3_open(DB_NAME, &m_db);
     if( rc )
     {
-#ifdef VERBOSE
         std::cout << "Can't open database: %s\n" << sqlite3_errmsg(m_db);
-#endif
         sqlite3_close(m_db);
         m_valid = false;
         return;
