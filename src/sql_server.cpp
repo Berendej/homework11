@@ -5,13 +5,12 @@
 #include "defaults.h"
 #include "service.h"
 
-int main(int c, char *args[])
+int main(int argc, char *args[])
 {
     int port = DEFAULT_PORT; // lucky port
-    int o = getopt(c, args, "p:");
-    if ('p' == o )
+    if ( argc > 1 )
     {
-        port = std::stoi(optarg);
+        port = std::stoi(args[1]);
     }
     try 
     {
