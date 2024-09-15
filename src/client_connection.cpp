@@ -4,7 +4,7 @@
 
 #include "client_connection.h"
 
-#define VERBOSE
+//#define VERBOSE
 
 client_connection_c::client_connection_c(boost::asio::io_service& service, short port) :
             m_socket(service), 
@@ -31,7 +31,9 @@ void client_connection_c::connect()
 
 bool client_connection_c::read_input()
 {
+#ifdef VERBOSE
     std::cout << "read_input" << std::endl;
+#endif
     m_line.clear();
     std::getline( std::cin, m_line );
     if ( 0 == m_line.length() )
@@ -108,9 +110,7 @@ void client_connection_c::process_response(int length)
 {
     std::string s( (std::istreambuf_iterator<char>(&m_buffer)), 
                     std::istreambuf_iterator<char>() );
-#ifdef VERBOSE
     std::cout << "response: " << s << std::endl;
-#endif
 }
 
 void client_connection_c::handle_read(const boost::system::error_code error,

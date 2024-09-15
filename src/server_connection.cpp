@@ -150,7 +150,12 @@ std::string server_connection_c::gen_intersec(const std::vector<std::string> &v)
 
 std::string server_connection_c::gen_dif(const std::vector<std::string> &v)
 {
-    return ""; // stub
+    std::string sql{ " SELECT A.id as id, A.name as A , B.name as B "
+                     " FROM A "
+                     " FULL JOIN B ON (A.id = B.id) "
+                     " WHERE A.id IS NULL OR B.id IS NULL;"
+                };
+    return sql;
 }
 
 std::string server_connection_c::preprocess_cmd(const std::string &s)
@@ -168,23 +173,23 @@ TRUNCATE table
 INTERSECTION
 SYMMETRIC_DIFFERENCE
 */    
-    if ( 0 == v[0].compare("INSERT") )
+    if ( 0 == v[0].find("INS") )
     {
         return gen_insert(v);
     }
-    if ( 0 == v[0].compare("TRUNCATE"))
+    if ( 0 == v[0].find("TRUN"))
     {
         return gen_trancate(v);
     }
-    if ( 0 == v[0].compare("INTERSECTION"))
+    if ( 0 == v[0].find("INTER"))
     {
         return gen_intersec(v);
     }
-    if ( 0 == v[0].compare("SYMMETRIC_DIFFERENCE"))
+    if ( 0 == v[0].find("SYMM"))
     {
         return gen_dif(v);
     }
-    if ( 0 == v[0].compare("SELECT"))
+    if ( 0 == v[0].find("SEL"))
     {
         return gen_select(v);
     }

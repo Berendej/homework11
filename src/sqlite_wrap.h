@@ -6,8 +6,13 @@
 using table_t =  std::map<std::string, str_vector_t>;
 using i_table_t = table_t::iterator;
 
+using column_widt_t =  std::map<std::string, int>;
+using i_column_widt_t = column_widt_t::iterator;
+
 using fild_order_t =  std::map<int, std::string>;
 using i_fild_order_t = fild_order_t::iterator;
+
+
 
 
 // wrapper
@@ -19,6 +24,7 @@ private:
     std::string m_response;
     table_t m_table;
     fild_order_t m_field_order;
+    column_widt_t m_column_width;
     int m_current_field_num;
     int m_rows;
 

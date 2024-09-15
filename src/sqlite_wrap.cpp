@@ -4,7 +4,7 @@
 
 #define VERBOSE
 #define DB_NAME "db.sqlite"
-
+#define COL_GAP 3
 
 int callback_aux(void* sqlite_ptr, int argc, char **argv, char **azColName)
 {
@@ -38,6 +38,9 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
             {
                 it = p.first;
                 m_field_order[m_current_field_num++] = field;
+                std::cout << "initial width of " << field << " " 
+                             << field.length() << std::endl;
+                m_column_width[field] = field.length();
             }
             else
             {
@@ -47,7 +50,17 @@ int sqlite_c::callback(int argc, char **argv, char **azColName)
         }
         if ( ok )
         {
-            val = argv[i];
+            val = "";
+            if ( NULL !=  argv[i] ) 
+            {
+                val = argv[i];
+            }
+            if ( val.length() > m_column_width[field] )
+            {
+                std::cout << " width of " << field << " increased to " 
+                             << val.length() << std::endl;
+                m_column_width[field] = val.length();
+            }
             std::cout << "val " << val << std::endl;
             it->second.push_back(val);
             m_rows = it->second.size();
@@ -107,15 +120,24 @@ void sqlite_c::transform_table()
     i_fild_order_t ifield = m_field_order.begin();
     while ( ifield != m_field_order.end() )
     {
-        i_table_t it = m_table.find(ifield->second);
+        const std::string &column_name = ifield->second;
+        i_table_t it = m_table.find(column_name);
         if ( it == m_table.end() )
         {
             std::cout << "wrong field number correspondence" << std::endl;
             continue;
         }
         int row_ix = 0;
-        v[row_ix].append(it->first);
-        v[row_ix++].append("\t");
+        v[row_ix].append(column_name);
+        // make same width for all column values and header
+        int column_width = m_column_width[column_name];
+        int pad_blanks = m_column_width[column_name] - column_name.length() + COL_GAP; 
+        while( pad_blanks > 0 )
+        {
+            v[row_ix].push_back(' ');
+            pad_blanks--;
+        }
+        row_ix++;
         i_str_vector_t ist = it->second.begin();
         for( auto s : it->second)
         {
@@ -123,7 +145,15 @@ void sqlite_c::transform_table()
             std::cout << "value " << s << std::endl;
 #endif
             v[row_ix].append(s);
-            v[row_ix++].append("\t");
+
+            // make same width for all column values and header
+            pad_blanks = column_width - s.length() + COL_GAP;
+            while( pad_blanks > 0 )
+            {
+                v[row_ix].push_back(' ');
+                pad_blanks--;
+            }
+            row_ix++;
         }
         ifield++;
     }
@@ -144,6 +174,7 @@ std::string sqlite_c::execute(std::string oper)
     m_response = "OK\n";
     m_table.clear();
     m_field_order.clear();
+    m_column_width.clear();
     m_current_field_num = 1;
     m_rows = 0;
     int rc = sqlite3_exec(m_db, oper.c_str(), callback_aux, this, &err_msg);
